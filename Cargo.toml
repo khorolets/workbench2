@@ -1,0 +1,13 @@
+[package]
+name = "workbench2"
+version = "0.1.0"
+authors = ["Bohdan Khorolets <bogdan@khorolets.com>"]
+
+[dependencies]
+iron = "*"
+router = "*"
+mount = "*"
+staticfile = "*"
+hyper = "*"
+tera = "*"
+chrono = "0.3.0"
