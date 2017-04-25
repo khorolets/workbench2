@@ -43,13 +43,19 @@ fn workbench_common_context() -> Context {
     context
 }
 
+fn render_template(filename: &str) -> String {
+    //! Renders a template
+    let tera = compile_templates!("templates/**/*.html");
+    let context = workbench_common_context();
+    let template = tera.render(&filename, &context)
+        .unwrap_or("Error in rendering a template".to_string());
+    template
+}
+
 fn main() {
 
     fn greeting(_: &mut Request) -> IronResult<Response> {
-        let tera = compile_templates!("templates/**/*");
-        let context = workbench_common_context();
-        let template = tera.render("index.html", &context).unwrap();
-
+        let template = render_template("index.html");
         let mut response = Response::with((status::Ok, template));
 
         // Setting ContentType
@@ -58,13 +64,12 @@ fn main() {
     }
 
     fn page(req: &mut Request) -> IronResult<Response> {
-        let tera = compile_templates!("templates/**/*");
-        let context = workbench_common_context();
         let ref page = req.extensions.get::<Router>()
             .unwrap()
             .find("page")
             .unwrap_or("404");
-        let template = tera.render(*page, &context).unwrap();
+
+        let template = render_template(*page);
 
         // Setting ContentType
         let mut response = Response::with((status::Ok, template));
