@@ -1,6 +1,6 @@
 [package]
 name = "workbench2"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Bohdan Khorolets <bogdan@khorolets.com>"]
 
 [dependencies]
@@ -11,3 +11,4 @@ staticfile = "*"
 hyper = "*"
 tera = "*"
 chrono = "0.3.0"
+serde_json = "*"

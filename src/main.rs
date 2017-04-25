@@ -3,6 +3,7 @@ extern crate iron;
 extern crate router;
 extern crate mount;
 extern crate staticfile;
+extern crate serde_json;
 
 #[macro_use] extern crate tera;
 
@@ -10,56 +11,25 @@ extern crate hyper;
 
 use std::path::Path;
 
-use chrono::{UTC};
 use iron::prelude::*;
 use iron::status;
 use mount::Mount;
 use router::Router;
 use staticfile::Static;
 
-use tera::Context;
 
-use hyper::header::{ContentType};
-use hyper::mime::{Mime, TopLevel, SubLevel};
-
-fn set_content_type(response: &mut Response) {
-    //! Setting Content Type Header to the `response` before returning
-    response.headers.set(
-        ContentType(
-            Mime(
-                TopLevel::Text, SubLevel::Html, vec![]
-            )
-        )
-    )
-}
-
-fn workbench_common_context() -> Context {
-    //! Returns tera::Context that is common for every page
-    let mut context = Context::new();
-    context.add(
-        "timestamp",
-        &UTC::now().timestamp()
-    );
-    context
-}
-
-fn render_template(filename: &str) -> String {
-    //! Renders a template
-    let tera = compile_templates!("templates/**/*.html");
-    let context = workbench_common_context();
-    let template = tera.render(&filename, &context)
-        .unwrap_or("Error in rendering a template".to_string());
-    template
-}
+mod filters;
+mod utils;
 
 fn main() {
+    let version = "0.2.0";
 
     fn greeting(_: &mut Request) -> IronResult<Response> {
-        let template = render_template("index.html");
+        let template = utils::render_template("index.html");
         let mut response = Response::with((status::Ok, template));
 
         // Setting ContentType
-        set_content_type(&mut response);
+        utils::set_content_type(&mut response);
         Ok(response)
     }
 
@@ -69,11 +39,11 @@ fn main() {
             .find("page")
             .unwrap_or("404");
 
-        let template = render_template(*page);
+        let template = utils::render_template(*page);
 
         // Setting ContentType
         let mut response = Response::with((status::Ok, template));
-        set_content_type(&mut response);
+        utils::set_content_type(&mut response);
         Ok(response)
     }
 
@@ -87,6 +57,7 @@ fn main() {
         .mount("/", router)
         .mount("/static/", Static::new(Path::new("static")));
 
+    println!("Workbench2 ver. {}", version);
     println!("Running server on http://127.0.0.1:3000/");
     println!("Press Ctrl+C to stop server");
     Iron::new(mount).http("127.0.0.1:3000").unwrap();
